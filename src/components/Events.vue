@@ -1,80 +1,118 @@
 <template>
-
     <v-content>
-        <v-container fluid>
-            <v-card>
-                <v-card-title>
-                    <v-flex xs4>
-                        <v-btn color="primary" @click="newItem">
-                            发布活动商品
-                        </v-btn>
-                        <v-btn color="orange" @click="newItem">
-                            活动创建
-                        </v-btn>
-                    </v-flex>
-                    <v-flex xs4 mr-4 v-if="shops && is_super">
-                        <v-select :items="shops" label="选择店铺" solo></v-select>
-                    </v-flex>
-                    <v-flex xs4 mr-4 v-if="events">
-                        <v-select @change="getEventItems" :items="events" label="选择活动" solo></v-select>
-                    </v-flex>
-                    <v-spacer></v-spacer>
-                    <v-flex xs4>
-                        <v-text-field v-model="search" @click:append="iconClick" :append-icon="searchIcon" label="搜索" single-line hide-details></v-text-field>
-                    </v-flex>
-                </v-card-title>
-                <v-data-table :loading="loading" :headers="headers" :items="items" hide-actions>
-                    <template slot="headerCell" slot-scope="props">
-                        <v-tooltip bottom>
-                            <span slot="activator">
-                                {{ props.header.text }}
-                            </span>
-                        </v-tooltip>
-                    </template>
-                    <template slot="items" slot-scope="props">
-                        <td>{{ props.item.name }}</td>
-                        <td>{{ props.item.event_name }}</td>
-                        <td>{{ props.item.total_num }}</td>
-                        <td>{{ props.item.bargained_num }}</td>
-                        <td>{{ props.item.winned_num }}</td>
-                        <td>{{ props.item.exchanged_num }}</td>
-                        <td>{{ props.item.origin_price }}</td>
-                        <td>{{ props.item.bargain_price }}</td>
-                        <!-- <td>{{ props.item.bargain_max_times }}</td>
-            <td>{{ props.item.bargain_min_times }}</td>
-            <td>{{ props.item.bargain_max_price }}</td>
-            <td>{{ props.item.bargain_min_price }}</td> -->
-                        <td>{{ props.item.is_released == 1 ? '已发布' : '已下架' }}</td>
-                        <td>{{ props.item.created_at }}</td>
-                        <td class="justify-center  px-0">
-                            <v-icon title="编辑" small class="mr-2" @click="editItem(props.item)">
-                                fas fa-pen
-                            </v-icon>
+        <v-container fluid grid-list-md v-if="me && me.is_activated == 1">
+            <v-data-iterator :items="items" content-tag="v-layout" hide-actions row wrap>
+                <v-toolbar slot="header" class="mb-2" color="indigo darken-5" dark flat>
+                    <!-- <v-toolbar-title></v-toolbar-title> -->
+                    <v-dialog v-model="dialog" max-width="500px">
+                        <v-btn @click="createEvent" slot="activator" color="primary" dark class="mb-2">新建活动</v-btn>
+                        <v-card>
+                            <v-card-title>
+                                <span class="headline">{{ formTitle }}</span>
+                            </v-card-title>
 
-                            <v-icon v-if="props.item.is_released == 0" class="mr-2" title="发布" small @click="publishItem(props.item.id,'on')">
-                                fas fa-toggle-off
-                            </v-icon>
-                            <v-icon v-if="props.item.is_released == 1" class="mr-2" title="下架" small @click="publishItem(props.item.id,'off')">
-                                fas fa-toggle-on
-                            </v-icon>
+                            <v-card-text>
+                                <v-container grid-list-md v-if="editedItem">
+                                    <v-layout wrap>
+                                        <v-flex xs12 md12>
+                                            <v-text-field :disabled="disabled" v-model="editedItem.name" label="活动名称" :error-messages="errors.name"></v-text-field>
+                                        </v-flex>
+                                        <v-flex xs12 md6>
+                                            <v-menu ref="startDateMenu" :close-on-content-click="false" v-model="startDateMenu" :nudge-right="40" lazy transition="scale-transition"
+                                                offset-y full-width max-width="290px" min-width="290px">
+                                                <v-text-field slot="activator" v-model="editedItem.start_date" label="活动开始日期" hint="" persistent-hint prepend-icon="event"
+                                                    :error-messages="errors.start_date"></v-text-field>
+                                                <v-date-picker v-model="editedItem.start_date" no-title @input="startDateMenu = false"></v-date-picker>
+                                            </v-menu>
+                                        </v-flex>
+                                        <v-flex xs12 md6>
+                                            <v-menu ref="endDateMenu" :close-on-content-click="false" v-model="endDateMenu" :nudge-right="40" lazy transition="scale-transition"
+                                                offset-y full-width max-width="290px" min-width="290px">
+                                                <v-text-field slot="activator" v-model="editedItem.end_date" label="活动结束日期" hint="" persistent-hint prepend-icon="event"
+                                                    :error-messages="errors.end_date"></v-text-field>
+                                                <v-date-picker v-model="editedItem.end_date" no-title @input="endDateMenu = false"></v-date-picker>
+                                            </v-menu>
+                                        </v-flex>
+                                    </v-layout>
+                                </v-container>
+                            </v-card-text>
 
-                            <v-icon v-if="props.item.is_released == 0" title="删除" small @click="deleteItem(props.item)">
-                                fas fa-trash-alt
-                            </v-icon>
-                        </td>
-                    </template>
-                    <template slot="no-data">
-                        <v-alert :value="items && !loading" color="error" icon="warning">
-                            抱歉，没有可显示的数据 :(
-                        </v-alert>
-                    </template>
-                </v-data-table>
-            </v-card>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="blue darken-1" flat @click.native="close">关闭</v-btn>
+                                <v-btn v-if="!disabled" color="blue darken-1" flat @click.native="save" :disabled="disabled">保存</v-btn>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
+                </v-toolbar>
 
-            <div class="text-xs-center pt-2" v-if="pagination && pagination.lastPage > 1">
-                <v-pagination v-model="pagination.page" :length="pagination.lastPage"></v-pagination>
-            </div>
+                <v-flex slot="item" slot-scope="props" xs12 sm6 md4>
+                    <v-card>
+                        <v-card-title class="subheading font-weight-bold">
+                            {{ props.item.name }}
+                        </v-card-title>
+
+                        <v-divider></v-divider>
+
+                        <v-list dense>
+                            <v-list-tile>
+                                <v-list-tile-content>开始日期:</v-list-tile-content>
+                                <v-list-tile-content class="align-end">{{ props.item.start_date }}</v-list-tile-content>
+                            </v-list-tile>
+
+                            <v-list-tile>
+                                <v-list-tile-content>结束日期:</v-list-tile-content>
+                                <v-list-tile-content class="align-end">{{ props.item.end_date }}</v-list-tile-content>
+                            </v-list-tile>
+                            <v-list-tile>
+                                <v-list-tile-content>发布商品数量:</v-list-tile-content>
+                                <v-list-tile-content class="align-end">{{ props.item.total_qty }}</v-list-tile-content>
+                            </v-list-tile>
+
+                            <v-list-tile>
+                                <v-list-tile-content>砍价数量:</v-list-tile-content>
+                                <v-list-tile-content class="align-end">{{ props.item.total_qty }}</v-list-tile-content>
+                            </v-list-tile>
+
+                            <v-list-tile>
+                                <v-list-tile-content>砍价成功数量:</v-list-tile-content>
+                                <v-list-tile-content class="align-end">{{ props.item.total_qty }}</v-list-tile-content>
+                            </v-list-tile>
+
+                            <v-list-tile>
+                                <v-list-tile-content class="align-end">
+                                    <v-btn-toggle>
+                                        <v-btn flat>
+                                            <v-icon title="查看活动商品" @click="viewItem(props.item)">
+                                                fas fa-eye
+                                            </v-icon>
+                                        </v-btn>
+                                        <v-btn flat>
+                                            <v-icon title="编辑" @click="editItem(props.item)">
+                                                fas fa-pen
+                                            </v-icon>
+                                        </v-btn>
+                                    </v-btn-toggle>
+                                </v-list-tile-content>
+                            </v-list-tile>
+                        </v-list>
+                    </v-card>
+                </v-flex>
+
+                <!-- <v-toolbar slot="footer" class="mt-2" color="indigo" dark dense flat>
+                    <v-toolbar-title class="subheading"></v-toolbar-title>
+                </v-toolbar> -->
+            </v-data-iterator>
+            <v-flex sm4 mt-2>
+                <v-card>
+                    <v-card-media :src="shop.code_image" height="400px" v-if="shop"></v-card-media>
+                    <v-card-actions>
+                        <v-btn flat color="orange" @click="toDetail">查看详细</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-flex>
         </v-container>
+        <error v-else></error>
         <v-snackbar v-model="snackbar" :top="true" :right="true" :color="snackColor">
             {{snackbarText}}
             <v-btn flat @click="snackbar = false">
@@ -85,89 +123,71 @@
 </template>
 <script>
     import * as apiUrls from './../utils/api-urls'
+    import error from './../components/Error.vue'
+
+    import {
+        storeEvent
+    } from './../utils/utils'
     import {
         mapState,
         mapActions
     } from 'vuex'
     export default {
+        components: {
+            error
+        },
         data() {
             return {
-                events: null,
+                startDateMenu: false,
+                endDateMenu: false,
                 title: '活动管理',
                 search: '',
                 snackColor: 'success',
-                selected: [],
                 pagination: {},
                 items: [],
+                canChooseItems: [],
                 loading: false,
                 snackbar: false,
                 snackbarText: '更新成功~',
                 loading: false,
-                shops: [],
                 dialog: false,
+                eventDialog: false,
+                formTitle: '新建',
+                editedItem: null,
+                disabled: false,
+                storeMethod: 'POST',
                 integer: (v) => !!v && /^\d+$/.test(v) || '必须填写整数',
                 headers: [{
-                        text: '商品名',
+                        text: '活动名称',
                         value: 'name',
                         sortable: false
                     },
                     {
-                        text: '活动名',
-                        value: 'name',
+                        text: '开始日期',
+                        value: 'start_date',
                         sortable: false
                     },
                     {
-                        text: '总量',
-                        value: 'total_num',
-                        sortable: false
-                    },
-                    {
-                        text: '已砍数量',
-                        value: 'bargained_num',
-                        sortable: false
-                    },
-                    {
-                        text: '已赢取数量',
-                        value: 'winned_num',
-                        sortable: false
-                    },
-                    {
-                        text: '已兑换数量',
-                        value: 'exchanged_num',
-                        sortable: false
-                    },
-                    {
-                        text: '原价',
-                        value: 'origin_price',
-                        sortable: false
-                    },
-                    {
-                        text: '可砍价',
-                        value: 'bargain_price',
-                        sortable: false
-                    },
-                    {
-                        text: '发布状态',
-                        value: 'is_released',
-                        sortable: false
-                    },
-                    {
-                        text: '创建时间',
-                        value: 'created_at',
+                        text: '结束日期',
+                        value: 'end_date',
                         sortable: false
                     },
                     {
                         text: '操作',
                         value: 'operation',
+                        width: '200px',
                         sortable: false
                     }
                 ],
-                searchIcon: 'search'
+                searchIcon: 'search',
+                errors: {}
             }
         },
         computed: {
             ...mapState({
-                is_super: state => state.me && state.me.is_super
+                // events: state => state.events
+                shop: state => state.me && state.me.shop,
+                me: state=> state.me
             }),
             page() {
                 if (this.pagination) {
@@ -175,96 +195,29 @@
                 } else {
                     return 1;
                 }
-            },
-            formTitle() {
-                return this.editedIndex === -1 ? '新建' : '编辑'
             }
         },
         created() {
-            this.getEventItems(1)
+            this.getItems(1)
         },
         watch: {
             page: function (page, oldPage) {
                 if (oldPage != undefined) {
-                    this.getEventItems(page)
+                    this.getItems(page)
                 }
             }
         },
         methods: {
-            newItem: function (e) {
+            toDetail: function () {
                 this.$router.push({
-                    name: 'createItem'
+                    name: 'setting'
                 })
             },
             submit: function (e) {
-                this.getEventItems(1)
+                this.getItems(1)
                 if (this.searchIcon == 'search') {
                     this.searchIcon = 'clear'
                 }
-            },
-            editItem: function (item) {
-                this.$router.push({
-                    name: 'item',
-                    params: {
-                        id: item.id
-                    }
-                })
-            },
-            publishItem: function (id, type = "on") {
-                let vm = this
-                vm.loading = true
-                let url = apiUrls.ITEM_PUBLISH.replace('{id}', id)
-                axios({
-                    method: 'POST',
-                    url: url,
-                    data: {
-                        type: type,
-                    }
-                }).then(function (response) {
-                    console.log(response)
-                    let res = response.data
-                    vm.snackbar = true
-                    vm.loading = false
-                    if (res && res.ret != 0) {
-                        vm.snackColor = 'error'
-                        vm.snackbarText = res.errMsg
-                    } else {
-                        vm.snackbarText = '操作成功~'
-                        vm.snackColor = 'success'
-                        vm.updateItem(id, type)
-                    }
-                }).catch(function (error) {
-                    vm.snackColor = 'error'
-                    vm.snackbar = true
-                    vm.loading = false
-                    vm.snackbarText = '服务器错误,请重试或者联系管理员'
-                })
-            },
-            updateItem: function (id, type = "on") {
-                let vm = this
-                for (let index = 0; index < vm.items.length; index++) {
-                    if (vm.items[index].id == id) {
-                        vm.items[index].is_posted = type == 'on' ? 1 : 0
-                        break
-                    }
-                }
-            },
-            saveOrder(item) {
-                let url = apiUrls.ITEM_UPDATE.replace('{id}', item.id)
-                item.type = 'order'
-                axios({
-                    method: 'PUT',
-                    url: url,
-                    data: item
-                }).then((response) => {
-                    this.snackbar = true
-                    this.snackColor = 'success'
-                    this.snackbarText = '排序更新成功'
-                }).catch((error) => {
-                    this.snackbar = true
-                    this.snackColor = 'error'
-                    this.snackbarText = '提交失败'
-                })
             },
             iconClick: function () {
                 if (this.searchIcon == 'search') {
@@ -279,39 +232,77 @@
                 this.search = ''
                 this.submit()
             },
-            deleteItem: function (item) {
-                if (confirm('此操作不可返回，是否继续')) {
-                    let url = apiUrls.ITEM_DELETE.replace('{id}', item.id)
-                    item.type = 'order'
-                    axios({
-                        method: 'DELETE',
-                        url: url,
-                        data: item
-                    }).then((response) => {
-                        this.snackbar = true
-                        this.snackColor = 'success'
-                        this.snackbarText = '删除成功'
-                        const index = this.items.indexOf(item)
-                        this.items.splice(index, 1)
-                    }).catch((error) => {
-                        this.snackbar = true
-                        this.snackColor = 'error'
-                        this.snackbarText = '提交失败'
-                    })
-                }
-            },
-            getEventItems: function (page) {
+            getItems: function (page) {
+                page = page ? page : 1;
                 let vm = this
                 let keyword = vm.search
                 vm.loading = true
                 vm.$store.dispatch('getItems', {
-                    model: 'event/items',
+                    model: 'events',
                     keyword: keyword,
                     page: page
                 }).then(res => {
                     vm.loading = false
                     vm.pagination = res.pagination
                     vm.items = res.data
+                })
+
+            },
+            createEvent() {
+                let vm = this
+                vm.errors = {}
+
+                vm.formTitle = '新建活动'
+                vm.editedItem = {
+                    name: '',
+                    start_date: '',
+                    end_date: '',
+                }
+                this.storeMethod = 'POST'
+            },
+            editItem(item) {
+                let vm = this
+                // 默认清空错误
+                vm.errors = {}
+
+                vm.dialog = true
+                vm.formTitle = item.name
+                vm.editedIndex = this.items.indexOf(item)
+                vm.editedItem = Object.assign({}, item)
+                vm.disabled = false
+                vm.storeMethod = 'PUT'
+            },
+            save() {
+                let vm = this
+                storeEvent({
+                    vm: vm,
+                    method: vm.storeMethod,
+                    data: vm.editedItem,
+                }).then(res => {
+                    vm.snackbar = true
+                    vm.snackColor = 'success'
+                    vm.snackbarText = '恭喜，提交成功。'
+                    vm.getItems(1)
+                    vm.dialog = false
+                }).catch(err => {
+                    if (err.status != 422) {
+                        vm.snackbar = true
+                        vm.snackColor = 'error'
+                        vm.snackbarText = '抱歉，服务器发生错误，稍后重试'
+                    } else {
+                        vm.errors = err.data
+                    }
+                })
+            },
+            close() {
+                this.dialog = false
+            },
+            viewItem(item) {
+                this.$router.push({
+                    name: 'eventItems',
+                    params: {
+                        id: item.id
+                    }
                 })
             }
         }

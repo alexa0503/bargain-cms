@@ -5,10 +5,12 @@ import App from './App.vue'
 import Routers from './router.js'
 import store from './store'
 import Vuetify from 'vuetify'
-import './stylus/main.styl'
-// import 'material-design-icons-iconfont/dist/material-design-icons.css'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 // import '@mdi/font/css/materialdesignicons.css'
+import 'vuetify/dist/vuetify.min.css'
+// import './stylus/main.styl'
 import '@fortawesome/fontawesome-free/css/all.css'
+
 Vue.use(Vuetify, {
   iconfont: 'fa'
  })
@@ -56,23 +58,33 @@ axios.interceptors.response.use((response) => {
       router.push({
         name: 'login'
       })
+      break;
+    case 403:
+      // router.push({
+      //   name: 'error'
+      // })
+      // break;
     case 405:
       //return Message.error(error.response.data.error)
     case 404:
       //alert('错误的页面')
     case 500:
-      //alert('服务器错误，请联系管理员')
-      console.log(error)
+      // alert('服务器错误，请联系管理员')
+      // console.log(error.response)
   }
-  return Promise.reject(error)
+  return Promise.reject(error.response)
 })
 
 
 router.beforeEach((to, from, next) => {
-  if (to.meta.title) {
-    document.title = to.meta.title + ' - 后台管理系统'
-  }
+  store.dispatch('getMe').then( me => {
+    if (to.meta.title) {
+      document.title = to.meta.title + ' - 后台管理系统'
+    }
+  }).catch( err => {
+  })
   next()
+
 })
 
 Vue.config.productionTip = false

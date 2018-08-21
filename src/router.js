@@ -1,20 +1,25 @@
-import LoginComponent from './components/Login.vue'
-import IndexComponent from './components/Index.vue'
-import NavigationComponent from './components/Navigation.vue'
-import ItemsComponent from './components/Items.vue'
-import ItemComponent from './components/Item.vue'
-import ShopsComponent from './components/Shops.vue'
-import UsersComponent from './components/Users.vue'
-import SettingComponent from './components/Setting.vue'
-import BargainsComponent from './components/Bargains.vue'
-
-
+// import LoginComponent from './components/Login.vue'
+const LoginComponent = () => import('./components/Login.vue')
+const ItemsComponent  = () => import('./components/Items.vue')
+const IndexComponent = () => import('./components/Index.vue')
+const NavigationComponent = () => import('./components/Navigation.vue')
+const ItemComponent = () => import('./components/Item.vue')
+const ShopsComponent = () => import('./components/Shops.vue')
+const UsersComponent = () => import('./components/Users.vue')
+const SettingComponent = () => import('./components/Setting.vue')
+const BargainsComponent = () => import('./components/Bargains.vue')
+const EventsComponent = () => import('./components/Events.vue')
+const EventItemsComponent = () => import('./components/EventItems.vue')
+const AccountComponent = () => import('./components/Account.vue')
+const RegisterComponent = () => import('./components/Register.vue')
+const ErrorComponent = () => import('./components/Error.vue')
 var config = [{
     path: '/login',
     name: 'login',
     meta: {
       title: '登陆'
     },
+    // component: LoginComponent
     components: {
       'login': LoginComponent
     }
@@ -37,6 +42,17 @@ var config = [{
       title: '登出'
     },
     components: {}
+  },
+  {
+    path: '/error',
+    name: 'error',
+    meta: {
+      title: '登出'
+    },
+    components: {
+      'mainContent': ErrorComponent,
+      'navigation': NavigationComponent
+    }
   },
   {
     path: '/users',
@@ -113,6 +129,61 @@ var config = [{
     components: {
       'mainContent': ItemComponent,
       'navigation': NavigationComponent
+    }
+  },
+  
+  {
+    path: '/c/item/:id',
+    name: 'copyItem',
+    meta: {
+      title: '复制商品'
+    },
+    components: {
+      'mainContent': ItemComponent,
+      'navigation': NavigationComponent
+    }
+  },
+  {
+    path: '/events',
+    name: 'events',
+    meta: {
+      title: '活动管理'
+    },
+    components: {
+      'mainContent': EventsComponent,
+      'navigation': NavigationComponent
+    }
+  },
+  {
+    path: '/event/:id?/items',
+    name: 'eventItems',
+    meta: {
+      title: '活动商品'
+    },
+    components: {
+      'mainContent': EventItemsComponent,
+      'navigation': NavigationComponent
+    }
+  },
+  {
+    path: '/account',
+    name: 'account',
+    meta: {
+      title: '账户管理'
+    },
+    components: {
+      'mainContent': AccountComponent,
+      'navigation': NavigationComponent
+    }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    meta: {
+      title: '用户注册'
+    },
+    components: {
+      'mainContent': RegisterComponent
     }
   }
 ]

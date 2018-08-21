@@ -23,6 +23,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
+                <v-btn :to="{name:'register'}" color="blue" flat>免费注册</v-btn>
                 <v-btn :disabled="!valid" @click="submit" color="primary">登陆</v-btn>
               </v-card-actions>
             </v-form>

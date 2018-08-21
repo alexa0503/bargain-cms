@@ -12,7 +12,8 @@ export default new Vuex.Store({
     user: {},
     auth: false,
     token: null,
-    me: null
+    me: null,
+    events: null
   },
   getters,
   actions,

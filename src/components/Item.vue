@@ -24,10 +24,10 @@
                 </v-flex>
                 <v-text-field v-model="inputs.name" :rules="rules.name" label="商品名称" required :error-messages="errors.name"></v-text-field>
                 <v-textarea :error-messages="errors.descr" auto-grow rows="2" v-model="inputs.descr" :rules="rules.descr" label="商品简介" required></v-textarea>
-                <v-text-field v-model="inputs.total_num" :rules="rules.total_num" label="总量" :error-messages="errors.total_num" required></v-text-field>
+                <!-- <v-text-field v-model="inputs.total_num" :rules="rules.total_num" label="总量" :error-messages="errors.total_num" required></v-text-field>
                 <v-text-field v-model="inputs.origin_price" :rules="rules.origin_price" label="原价" required :error-messages="errors.origin_price"></v-text-field>
-                <v-text-field v-model="inputs.bargain_price" :rules="rules.bargain_price" label="最低价" required :error-messages="errors.bargain_price"></v-text-field>
-                <v-layout row wrap>
+                <v-text-field v-model="inputs.bargain_price" :rules="rules.bargain_price" label="最低价" required :error-messages="errors.bargain_price"></v-text-field> -->
+                <!-- <v-layout row wrap>
                     <v-flex xs6>
                         <v-text-field v-model="inputs.bargain_min_price" :rules="rules.bargain_min_price" label="可砍最低价格" required :error-messages="errors.bargain_min_price"></v-text-field>
                     </v-flex>
@@ -40,7 +40,7 @@
                     <v-flex xs6 px-2>
                         <v-text-field v-model="inputs.bargain_max_times" :rules="rules.bargain_max_times" label="最多砍价次数" required :error-messages="errors.bargain_max_times"></v-text-field>
                     </v-flex>
-                </v-layout>
+                </v-layout> -->
                 <v-btn :loading="loading" :disabled="!valid" @click="submit" large color="primary">
                     提交
                 </v-btn>
@@ -74,13 +74,13 @@
                 name: null,
                 image: null,
                 images: [],
-                origin_price: 99.00,
-                bargain_price: 0.99,
-                total_num: 99,
-                bargain_max_price: 9,
-                bargain_min_price: 0.99,
-                bargain_min_times: 5,
-                bargain_max_times: 20,
+                // origin_price: 99.00,
+                // bargain_price: 0.99,
+                // total_num: 99,
+                // bargain_max_price: 9,
+                // bargain_min_price: 0.99,
+                // bargain_min_times: 5,
+                // bargain_max_times: 20,
             },
             menu1: false,
             menu2: false,
@@ -89,26 +89,26 @@
                 'descr': [],
                 'image': [],
                 'images': [],
-                'origin_price': [],
-                'bargain_price': [],
-                'total_num': [],
-                'bargain_max_price': [],
-                'bargain_min_price': [],
-                'bargain_min_times': [],
-                'bargain_max_times': []
+                // 'origin_price': [],
+                // 'bargain_price': [],
+                // 'total_num': [],
+                // 'bargain_max_price': [],
+                // 'bargain_min_price': [],
+                // 'bargain_min_times': [],
+                // 'bargain_max_times': []
             },
             rules: {
                 'name': [v => !!v || '请输入店铺名'],
                 'descr': [v => !!v || '请输入描述'],
                 'image': [],
                 'images': [],
-                'origin_price': [],
-                'bargain_price': [],
-                'total_num': [],
-                'bargain_max_price': [],
-                'bargain_min_price': [],
-                'bargain_min_times': [],
-                'bargain_max_times': []
+                // 'origin_price': [],
+                // 'bargain_price': [],
+                // 'total_num': [],
+                // 'bargain_max_price': [],
+                // 'bargain_min_price': [],
+                // 'bargain_min_times': [],
+                // 'bargain_max_times': []
             }
         }),
         created: function () {
@@ -131,7 +131,7 @@
                 let vm = this,
                     url, method
                 if (vm.$refs.form.validate()) {
-                    if (vm.inputs.id) {
+                    if (vm.inputs.id && vm.$router.history.current.name == 'item') {
                         url = apiUrls.ITEM_UPDATE.replace('{id}', vm.inputs.id)
                         method = 'PUT'
                     } else {
@@ -146,18 +146,26 @@
                     }).then(function (res) {
                         vm.snackbar = true
                         vm.snackColor = 'success'
-                        vm.snackText = '更新成功'
                         vm.loading = false
-                        if (method == 'POST') {
-                            this.clear()
+                        if (vm.$router.history.current.name == 'createItem') {
+                            vm.snackText = '创建成功'
+                            vm.clear()
+                        }
+                        else if(vm.$router.history.current.name == 'copyItem'){
+                            vm.snackText = '复制成功'
+                            vm.clear()
+                            vm.toIndex()
+                        }
+                        else{
+                            vm.snackText = '更新成功'
                         }
                     }).catch(function (res) {
                         vm.snackbar = true
                         vm.snackColor = 'error'
                         vm.loading = false
-                        if (res.response.status == 422) {
+                        if (res.response && res.response.status == 422) {
                             vm.snackText = '输入错误哦'
-                            let errors = res.response.errors
+                            let errors = res.response.data
                             for (let key in errors) {
                                 vm.errors[key] = errors[key]
                             }

@@ -1,14 +1,14 @@
 //import * as types from './mutation-types'
 import * as apiUrls from './../utils/api-urls'
 export default {
-    async getMe({
+    getMe({
         commit
     }) {
         return new Promise((resolve, reject) => {
             axios.get(apiUrls.ME)
                 .then(function (response) {
                     commit('me', response.data.data)
-                    resolve(response)
+                    resolve(response.data.data)
                 })
                 .catch(function (error) {
                     commit('me', null)
@@ -16,16 +16,14 @@ export default {
                 });
         })
     },
-    async refreshToken({
+    refreshToken({
         commit
     }, token) {
         return new Promise((resolve, reject) => {
             if (!token) {
                 axios.post(apiUrls.REFRESH_TOKEN).then(function (response) {
                     commit('refreshToken', response.data.token)
-                    resolve(response)
                 }).catch(function (error) {
-                    reject(error)
                 })
             } else {
                 commit('refreshToken', token)
@@ -33,21 +31,32 @@ export default {
             }
         })
     },
-    async login({
+    login({
         commit
     },data) {
         return new Promise((resolve, reject) => {
         })
     },
-    async logout({
+    logout({
         commit
     }) {
         return new Promise((resolve, reject) => {
             axios.post(apiUrls.LOGOUT).then((response) => {
                 commit('logout')
-                resolve(response)
+                return resolve(response)
             }).catch((error) => {
-                reject(error)
+                return reject(error)
+            })
+        })
+    },
+    getEvents({commit}) {
+        return new Promise((resolve,reject)=>{
+            let url = apiUrls.EVENTS
+            axios.get(url).then(res => {
+                commit('setEvents', res.data.data)
+                return resolve(res.data.data)
+            }).catch(err => {
+                return reject(err)
             })
         })
     },
@@ -71,17 +80,22 @@ export default {
                 }
             }).then(res => {
                 let items = res.data.data
-                let headers = res.data.headers
+                // let headers = res.data.headers
                 let pagination = {
                     rowsPerPage: res.data.meta.per_page,
                     totalItems: res.data.meta.total,
                     page: res.data.meta.current_page,
                     lastPage: res.data.meta.last_page
                 }
+                let data = {
+                    data: items,
+                    pagination: pagination,
+                    // headers: headers
+                }
                 //commit('updateItems',{items,headers,pagination})
-                resolve(res.data)
+                return resolve(data)
             }).catch(error => {
-                reject(error)
+                return reject(error)
             })
         })
     }

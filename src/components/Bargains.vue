@@ -1,6 +1,6 @@
 <template>
     <v-content>
-        <v-container fluid>
+        <v-container fluid v-if="me && me.is_activated == 1">
             <v-card>
                 <v-card-title>
                     {{ title }}
@@ -41,14 +41,19 @@
                 <v-pagination v-model="pagination.page" :length="pagination.lastPage"></v-pagination>
             </div>
         </v-container>
+        <error v-else></error>
     </v-content>
 </template>
 <script>
+import error from './../components/Error.vue'
     import {
         mapState,
         mapActions
     } from 'vuex'
     export default {
+        components: {
+            error
+        },
         data() {
             return {
                 title: '砍价管理',
@@ -94,12 +99,13 @@
                         sortable: false
                     }
                 ],
-                searchIcon: 'search'
+                searchIcon: 'fa-search'
             }
         },
         computed: {
             ...mapState({
-                is_super: state => state.me && state.me.is_super
+                is_super: state => state.me && state.me.is_super,
+                me: state => state.me
             }),
             page() {
                 if (this.pagination) {
@@ -122,21 +128,21 @@
         methods: {
             submit: function (e) {
                 this.getItems(1)
-                if (this.searchIcon == 'search') {
-                    this.searchIcon = 'clear'
+                if (this.searchIcon == 'fa-search') {
+                    this.searchIcon = 'fa-clear'
                 }
             },
             iconClick: function () {
-                if (this.searchIcon == 'search') {
-                    this.searchIcon = 'clear'
+                if (this.searchIcon == 'fa-search') {
+                    this.searchIcon = 'fa-clear'
                     this.submit()
                 } else {
-                    this.searchIcon = 'search'
+                    this.searchIcon = 'fa-search'
                     this.clearSearch()
                 }
             },
             clearSearch: function () {
-                this.search = ''
+                this.search = 'fa-search'
                 this.submit()
             },
             getItems: function (page) {

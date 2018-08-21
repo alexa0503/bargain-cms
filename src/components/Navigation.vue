@@ -51,21 +51,39 @@
         <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
         <span class="hidden-sm-and-down">后台管理系统</span>
       </v-toolbar-title>
-      <v-text-field flat solo-inverted prepend-icon="search" label="Search" class="hidden-sm-and-down"></v-text-field>
+      <v-text-field flat solo-inverted prepend-icon="fa-search" label="Search" class="hidden-sm-and-down"></v-text-field>
       <v-spacer></v-spacer>
 
-      <v-btn icon>
+      <!-- <v-btn icon>
         <v-icon>refresh</v-icon>
-      </v-btn>
-      <v-btn href="#" @click="logout" router icon>
-        <v-icon>lock_open</v-icon>
-      </v-btn>
+      </v-btn> -->
+      <div>
+        <v-menu offset-y nudge-bottom="15" >
+          <v-btn icon slot="activator">
+            <v-icon dark>account_circle</v-icon>
+          </v-btn>
+          <v-list>
+            <v-list-tile>
+              <v-list-tile-title>欢迎，admin</v-list-tile-title>
+            </v-list-tile>
+            <v-list-tile @click="toAccount">
+              <v-list-tile-title><v-icon small>fa-cog</v-icon> 设置</v-list-tile-title>
+            </v-list-tile>
+            <v-list-tile @click="logout">
+              <v-list-tile-title><v-icon small>fa-sign-out-alt</v-icon> 退出</v-list-tile-title>
+            </v-list-tile>
+          </v-list>
+        </v-menu>
+      </div>
+
+      <!-- <v-btn href="#" @click="logout" router icon>
+        <v-icon>fa-sign-out-alt</v-icon>
+      </v-btn> -->
     </v-toolbar>
   </div>
 </template>
 
 <script>
-
   import {
     mapState,
     mapActions
@@ -76,25 +94,37 @@
       dialog: false,
       drawer: null,
       items: [{
-          icon: 'dashboard',
-          text: 'Dashboard',
+          icon: 'fa fa-tachometer-alt',
+          text: '首页',
           routerName: 'home',
           seen: true
         },
         {
-          icon: 'list',
+          icon: 'fas fa-list-ol',
           text: '砍价管理',
           routerName: 'bargains',
           seen: true
         },
         {
-          icon: 'list',
+          icon: 'fas fa-th-list',
           text: '商品管理',
           routerName: 'items',
           seen: true
         },
         {
-          icon: 'supervisor_account',
+          icon: 'fas fa-calendar-alt',
+          text: '活动商品',
+          routerName: 'eventItems',
+          seen: true
+        },
+        // {
+        //   icon: 'fas fa-calendar',
+        //   text: '活动管理',
+        //   routerName: 'events',
+        //   seen: true
+        // },
+        {
+          icon: 'fa fa-user',
           text: '授权用户',
           routerName: 'users',
           seen: false
@@ -106,8 +136,8 @@
           seen: false
         },
         {
-          icon: 'settings',
-          text: '店铺管理',
+          icon: 'fas fa-cogs',
+          text: '店铺设置',
           routerName: 'setting',
           seen: true
         }
@@ -143,31 +173,33 @@
         // { icon: 'keyboard', text: 'Go to the old version' }
       ]
     }),
-    mounted: function(){
-      this.$store.dispatch('getMe')
+    mounted: function () {
+      // this.$store.dispatch('getMe')
     },
     computed: {
       ...mapState({
         is_super: state => state.me && state.me.is_super,
-        token: state=>state.getters.token
+        token: state => state.getters.token
       })
     },
-    watch:{
+    watch: {
       '$route': 'update',
-      is_super: function (v){
+      is_super: function (v) {
         this.items.forEach(item => {
-          if( item.routerName == 'shop' ){
+          if (item.routerName == 'shop') {
             item.seen = v
-          }
-          else if(item.routerName == 'setting'){
+          } else if (item.routerName == 'setting') {
             item.seen = !v
           }
         });
       }
     },
     methods: {
-      update: function(){
+      update: function () {
         this.$store.dispatch('getMe')
+      },
+      toAccount: function() {
+        this.$router.push({name:'account'})
       },
       next: function () {},
       logout: function () {

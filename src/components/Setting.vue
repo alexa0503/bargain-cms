@@ -2,7 +2,6 @@
     <v-content>
         <v-container fluid>
             <v-form ref="form" v-model="valid" lazy-validation v-if="inputs">
-                
                 <v-text-field v-model="inputs.name" :rules="rules.name" label="店铺名" required></v-text-field>
                 <v-text-field v-model="inputs.title" :rules="rules.title" label="页面标题" required></v-text-field>
                 <v-text-field v-model="inputs.tel" :rules="rules.tel" label="联系电话" required></v-text-field>
@@ -17,7 +16,7 @@
                     <v-text-field label="头部图片[750px*300px]" @click='pickFile("header_image")' v-model='inputs.header_image_name'></v-text-field>
                     <input type="file" style="display: none" ref="header_image" accept="image/*" @change="onFilePicked('header_image',$event)">
                 </v-flex>
-                <v-layout row wrap>
+                <!-- <v-layout row wrap>
                     <v-flex xs12 lg6>
                         <v-menu ref="menu1" :close-on-content-click="false" v-model="menu1" :nudge-right="40" lazy transition="scale-transition"
                             offset-y full-width max-width="290px" min-width="290px">
@@ -32,7 +31,7 @@
                             <v-date-picker v-model="inputs.end_date" no-title @input="menu2 = false"></v-date-picker>
                         </v-menu>
                     </v-flex>
-                </v-layout>
+                </v-layout> -->
                 <!-- 
                 <v-text-field v-model="inputs.share_title" :rules="rules.shareTitle" label="微信分享标题"></v-text-field>
                 <v-flex>
@@ -45,9 +44,9 @@
                 </v-btn>
             </v-form>
         </v-container>
-        <v-snackbar v-model="snackbar" :top="true" :right="true">
+        <v-snackbar color="success" v-model="snackbar" :top="true" :right="true">
             更新成功~
-            <v-btn color="pink" flat @click="snackbar = false">
+            <v-btn color="white" flat @click="snackbar = false">
                 关闭
             </v-btn>
         </v-snackbar>
@@ -62,7 +61,7 @@
 
     export default {
         data: () => ({
-            loading: false,
+            loading: true,
             snackbar: false,
             valid: true,
             inputs: {},
@@ -103,6 +102,7 @@
         watch: {
             shop: function (v) {
                 if (v) {
+                    this.loading = false
                     this.inputs = v
                 }
             }

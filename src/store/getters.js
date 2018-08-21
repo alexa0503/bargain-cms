@@ -6,5 +6,8 @@ export default {
     },
     me: (state, getters) => {
         return state.me
+    },
+    events: (state, getters) => {
+        return state.events
     }
 }
